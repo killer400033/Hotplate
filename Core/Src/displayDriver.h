@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #define DISPLAY_X 128
 #define DISPLAY_Y 64
 #define X_BYTES DISPLAY_X / 4

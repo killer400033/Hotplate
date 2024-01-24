@@ -3,6 +3,7 @@
 #include "displayAPI.h"
 
 extern uint32_t getSqrt(float input);
+void _drawBitMap(uint16_t x, uint16_t y, uint8_t *bitmap, uint16_t byte_width, uint16_t height);
 
 void clearDisplay() {
 	for (uint16_t i = 0; i < DISPLAY_Y; i++) {
@@ -96,21 +97,30 @@ void drawCircleHollow(uint16_t x, uint16_t y, uint16_t r, uint16_t thickness) {
 void drawString(uint16_t x, uint16_t y, Font font, char *str, uint16_t n) {
 	for (uint16_t i = 0; i < n; i++) {
 		if (str[i] == '\0') break;
-		drawBitMap(x, y, &font.data[(str[i] - 0x20) * font.byte_width * font.height], font.byte_width, font.height);
+		_drawBitMap(x, y, &font.data[(str[i] - 0x20) * font.byte_width * font.height], font.byte_width, font.height);
 		x += font.byte_width * 8;
 	}
 }
 
-void drawBitMap(uint16_t x, uint16_t y, uint8_t *bitmap, uint16_t byte_width, uint16_t height) {
+void _drawBitMap(uint16_t x, uint16_t y, uint8_t *bitmap, uint16_t byte_width, uint16_t height) {
 	for (uint16_t j = 0; j < height; j++) {
 		uint16_t x_byte_low = x/4;
 		uint16_t x_byte_high = (x+8*byte_width+(4-1))/4; // Round up
 		displayBuffer[y + j][x_byte_low] |= (bitmap[j*byte_width] >> x%4) & 0xF0;
 
 		uint16_t shift = (4-(x%4));
+		uint8_t rollingBuffer;
 		for (uint16_t x_byte = x_byte_low+1; x_byte < x_byte_high; x_byte++) {
-			displayBuffer[y + j][x_byte] |= (bitmap[j*byte_width + shift/8] << (shift%8)) & 0xF0;
+			rollingBuffer = (bitmap[j*byte_width + shift/8] << (shift%8));
+			if ((j*byte_width + shift/8 + 1)%byte_width != 0) {
+				rollingBuffer |= (bitmap[j*byte_width + shift/8 + 1] >> (8 - shift%8));
+			}
+			displayBuffer[y + j][x_byte] |= rollingBuffer & 0xF0;
 			shift += 4;
 		}
 	}
+}
+
+void drawBitMap(uint16_t x, uint16_t y, Bitmap bitmap) {
+	_drawBitMap(x, y, bitmap.data, bitmap.byte_width, bitmap.height);
 }
