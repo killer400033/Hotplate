@@ -7,4 +7,6 @@
 
 getSqrt:
   vsqrt.f32 s0, s0
+  vcvtr.u32.f32 s0, s0
+  vmov.f32 a1, s0
   mov pc,lr

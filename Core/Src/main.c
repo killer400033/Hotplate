@@ -1,4 +1,4 @@
-/* USER CODE BEGIN Header */
+;/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : main.c
@@ -103,7 +103,9 @@ int main(void)
 
   initializeDisplay();
 
-  drawRectangleHollow(5, 5, 118, 54, 10);
+  drawRectangle(12, 12, 1, 20);
+  drawRectangleHollow(112, 12, 16, 16, 4);
+  drawString(10, 40, font8x8, "hello", 5);
   writeToDisplay();
   /* USER CODE END 2 */
 
@@ -112,6 +114,13 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+  	LL_mDelay(500);
+  	drawCircleHollow(64, 32, 5, 2);
+  	writeToDisplay();
+
+  	LL_mDelay(500);
+  	drawCircle(64, 32, 3);
+  	writeToDisplay();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
