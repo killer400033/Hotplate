@@ -11,3 +11,4 @@ extern Bitmap fan;
 extern Bitmap heat;
 extern Bitmap temp;
 extern Bitmap delta;
+extern Bitmap x_axis;

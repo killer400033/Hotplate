@@ -1,2 +1,2 @@
-void begin(void);
+void initializeUI(void);
 void secondlyInterrupt(void);

@@ -102,7 +102,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   LL_SPI_Enable(SPI1);
 
-  begin();
+  initializeUI();
   /* USER CODE END 2 */
 
   /* Infinite loop */
