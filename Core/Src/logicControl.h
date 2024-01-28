@@ -12,5 +12,7 @@ extern uint16_t currTemp;
 extern uint16_t hotPlatePwr;
 extern uint16_t fanPwr;
 extern int16_t tempDelta;
-extern uint16_t tempCurve[CURVE_POINT_CNT];
+extern int16_t tempCurve[CURVE_POINT_CNT];
 extern enum Mode currMode;
+
+void runLogicLoop(void);

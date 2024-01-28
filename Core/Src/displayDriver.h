@@ -7,6 +7,7 @@
 enum DisplayMode {
 	INC_ADDRESS,
 	DISPLAYING,
+	STANDBY,
 };
 
 extern uint8_t displayBuffer[DISPLAY_Y][X_BYTES + 1];

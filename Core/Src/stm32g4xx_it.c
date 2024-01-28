@@ -49,7 +49,6 @@ uint8_t currInsTransfer;
 uint8_t instruction_1[3] = {0xF8, 0x20, 0x60};
 uint8_t instruction_2[5] = {0xF8, 0x80, 0x00, 0x80, 0x00};
 uint8_t instruction_3[3] = {0xF8, 0x20, 0x20};
-
 uint8_t currVert = 0;
 /* USER CODE END PV */
 
@@ -224,6 +223,42 @@ void DMA1_Channel2_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+void EXTI15_10_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+	enum Input input;
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_11) != RESET)
+  {
+    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_11);
+    /* USER CODE BEGIN LL_EXTI_LINE_11 */
+    if (!LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_12)) {
+    	if (LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_11)) {
+    		input = ENC_POS;
+    	}
+    	else {
+    		input = ENC_NEG;
+    	}
+    	inputInterrupt(input);
+    }
+    /* USER CODE END LL_EXTI_LINE_11 */
+  }
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_15) != RESET)
+  {
+    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_15);
+    /* USER CODE BEGIN LL_EXTI_LINE_15 */
+    input = BUTTON;
+    inputInterrupt(input);
+    /* USER CODE END LL_EXTI_LINE_15 */
+  }
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
+
+  /* USER CODE END EXTI15_10_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM6 global interrupt, DAC1 and DAC3 channel underrun error interrupts.
   */
 void TIM6_DAC_IRQHandler(void)
@@ -238,6 +273,7 @@ void TIM6_DAC_IRQHandler(void)
 
 	if (currVert >= 64) {
 		LL_TIM_DisableIT_UPDATE(TIM6);
+		displayMode = STANDBY;
 		currVert = 0;
 		return;
 	}

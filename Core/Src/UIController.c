@@ -1,16 +1,18 @@
+#include "UIController.h"
 #include "displayDriver.h"
-#include "displayAPI.h"
 #include "main.h"
 #include "logicControl.h"
-#include <stdio.h>
-#include <string.h>
+#include "displayAPI.h"
 
-uint8_t toggle = 0;
-char str[8] = {0};
-uint8_t menuSelection = 0;
-uint8_t calibSelection = 12;
-char *modeStr[3] = {"Standby", "Heating", "Cooling"};
-char *calibStr[3] = {"Ready", "Heating", "Cooling"};
+#include "Menus/mainMenu.h"
+#include "Menus/calibrationMenu.h"
+#include "Menus/selectionMenu.h"
+#include "Menus/curveMenu.h"
+
+
+enum Menu currMenu = MAIN_MENU;
+uint8_t updatePending = TRUE;
+uint8_t doInitialize = TRUE;
 
 void updateMainScreen(void);
 void updateSelectionScreen(void);
@@ -30,132 +32,56 @@ void initializeUI(void) {
 	LL_TIM_EnableIT_UPDATE(TIM7);
 	LL_TIM_EnableCounter(TIM7);
 
-	// Draw main screen
-	updateCurveScreen();
+	// Enable input interrupts
+	LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_12);
+	LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_15);
 }
 
 void secondlyInterrupt(void) {
 
 }
 
-void updateMainScreen(void) {
-	clearDisplay();
-
-	drawBitMap(107, 45, fan);
-	sprintf(str, "%d%%", fanPwr);
-	drawString(104 - 8*strlen(str), 50, font8x8, (char *)str);
-
-	drawBitMap(107, 20, delta);
-	sprintf(str, "%dC", tempDelta);
-	drawString(104 - 8*strlen(str), 25, font8x8, (char *)str);
-
-	drawBitMap(3, 45, heat);
-	sprintf(str, "%d%%", hotPlatePwr);
-	drawString(23, 50, font8x8, (char *)str);
-
-	drawBitMap(3, 20, temp);
-	sprintf(str, "%dC", currTemp);
-	drawString(23, 25, font8x8, (char *)str);
-
-	drawString(3, 2, font8x8, (char *)modeStr[currMode]);
-
-	if (toggle) {
-		drawCircleHollow(123, 5, 4, 2);
-	}
-	else {
-		drawCircle(123, 5, 2);
-	}
-	toggle = ~toggle;
-
-	writeToDisplay();
-}
-
-void updateSelectionScreen(void) {
-	clearDisplay();
-
-	drawString(8, 3, font8x8, "Selection Menu");
-
-	drawRectangleHollow(7, 16, 50, 16, 2);
-	drawString(13, 21, font8x8, "Start");
-
-	drawRectangleHollow(7, 42, 50, 16, 2);
-	drawString(13, 47, font8x8, "Curve");
-
-	drawRectangleHollow(70, 16, 50, 16, 2);
-	drawString(80, 21, font8x8, "Home");
-
-	drawRectangleHollow(70, 42, 50, 16, 2);
-	drawString(76, 47, font8x8, "Calib");
-
-	switch(menuSelection) {
-	case 0:
-		drawRectangleHollow(5, 14, 54, 20, 1);
+void runUILoop(void) {
+	enum Menu newMenu;
+	switch (currMenu) {
+	case MAIN_MENU:
+		newMenu = runMenuMain(doInitialize);
 		break;
-	case 1:
-		drawRectangleHollow(68, 14, 54, 20, 1);
+	case CALIBRATION_MENU:
+		newMenu = runMenuCalibration(doInitialize);
 		break;
-	case 2:
-		drawRectangleHollow(5, 40, 54, 20, 1);
+	case SELECTION_MENU:
+		newMenu = runMenuSelection(doInitialize);
 		break;
-	case 3:
-		drawRectangleHollow(68, 40, 54, 20, 1);
+	case CURVE_MENU:
+		newMenu = runMenuCurve(doInitialize);
 		break;
 	default:
 		break;
 	}
-
-	writeToDisplay();
+	doInitialize = FALSE;
+	if (newMenu != currMenu) {
+		currMenu = newMenu;
+		updatePending = TRUE;
+		doInitialize = TRUE;
+	}
 }
 
-void updateCurveScreen(void) {
-	// Draw Graph axis
-	drawRectangle(1, 0, 1, 56);
-	drawBitMap(1, 56, x_axis);
-
-	// Graph line and nodes
-	float x_pos;
-	for (uint16_t i = 0; i < CURVE_POINT_CNT - 1; i++) {
-		x_pos = 2.0 + (i * 21.0) / 2.0;
-		drawAngledLine(x_pos, 57 - tempCurve[i]/5, x_pos + 10.5, 57 - tempCurve[i + 1]/5);
-		drawCircleHollow(x_pos, 57 - tempCurve[i]/5, 2, 1);
+void inputInterrupt(enum Input input) {
+	switch (currMenu) {
+	case MAIN_MENU:
+		inputUpdateMain(input);
+		break;
+	case CALIBRATION_MENU:
+		inputUpdateCalibration(input);
+		break;
+	case SELECTION_MENU:
+		inputUpdateSelection(input);
+		break;
+	case CURVE_MENU:
+		inputUpdateCurve(input);
+		break;
+	default:
+		break;
 	}
-	drawCircleHollow(126, 57 - tempCurve[12]/5, 2, 1);
-
-	// Selected Node
-	x_pos = 2.0 + (calibSelection * 21.0) / 2.0;
-	if (calibSelection == CURVE_POINT_CNT - 1) x_pos-=2; // Adjustment to stop circle going off screen
-	drawCircle(x_pos, 57 - tempCurve[calibSelection]/5, 2);
-
-	// Temp readout
-	sprintf(str, "%dC", 100);
-	uint8_t str_x_pos = x_pos + 10;
-	uint8_t rect_width = 3 + strlen(str) * 5;
-
-	if (str_x_pos + rect_width > 127) {
-		str_x_pos = x_pos - 10 - rect_width;
-	}
-	drawRectangleHollow(str_x_pos - 2, 27, rect_width, 9, 1);
-	drawString(str_x_pos, 29, font5x6, str);
-}
-
-void updateCalibrationScreen(void) {
-	clearDisplay();
-
-	drawString((DISPLAY_X - 8*strlen(calibStr[currMode])) / 2, 5, font8x8, (char *)calibStr[currMode]);
-
-	drawString(4, 28, font8x8, " Set Temp:");
-	drawString(4, 40, font8x8, "Meas Temp:");
-	drawString(4, 52, font8x8, "Real Temp:");
-
-	sprintf(str, "%dC", 100);
-	drawString(92, 28, font8x8, str);
-
-	sprintf(str, "%dC", 100);
-	drawString(92, 40, font8x8, str);
-
-	sprintf(str, "%dC", 100);
-	drawString(92, 52, font8x8, str);
-	drawRectangleHollow(90, 50, 3 + strlen(str) * 8, 11, 1);
-
-	writeToDisplay();
 }

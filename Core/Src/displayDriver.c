@@ -2,7 +2,7 @@
 #include "displayDriver.h"
 
 uint8_t displayBuffer[DISPLAY_Y][X_BYTES + 1] = {0};
-enum DisplayMode displayMode;
+enum DisplayMode displayMode = STANDBY;
 
 // Function Declarations
 void sendInstruction(uint8_t _rWrS, uint8_t* data, uint32_t n);
@@ -51,7 +51,9 @@ void initializeDisplay(void) {
 }
 
 void writeToDisplay(void) {
-	displayMode = INC_ADDRESS;
-	LL_TIM_EnableIT_UPDATE(TIM6);
-	LL_TIM_EnableCounter(TIM6);
+	if (displayMode == STANDBY) {
+		displayMode = INC_ADDRESS;
+		LL_TIM_EnableIT_UPDATE(TIM6);
+		LL_TIM_EnableCounter(TIM6);
+	}
 }
