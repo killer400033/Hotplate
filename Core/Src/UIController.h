@@ -16,11 +16,12 @@ enum Input {
 	ENC_POS = 1,
 	ENC_NEG = -1,
 	BUTTON,
+	TIME,
 };
 
 extern uint8_t updatePending;
 
 void inputInterrupt(enum Input input);
 void initializeUI(void);
-void secondlyInterrupt(void);
+void UITimeIncrement(void);
 void runUILoop(void);

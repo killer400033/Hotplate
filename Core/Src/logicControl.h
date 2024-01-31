@@ -1,18 +1,38 @@
 #include <stdint.h>
 
 #define CURVE_POINT_CNT 13
+#define COLD_TEMP 40
+#define ERROR_MARGIN 5
+
+#define CLK 170000000
+#define PID_COUNTER 4250
+#define PID_PRESCALER (9999 + 1)
+#define TIMER_INTERRUPT_CNT CLK / (PID_COUNTER * PID_PRESCALER * 2)
 
 enum Mode {
-	Standby=0,
-	Heating=1,
-	Cooling=2,
+	PWR_STANDBY=0,
+	WORKING=1,
+	COOLING=2,
+	INITIALIZING=3,
 };
 
-extern uint16_t currTemp;
+typedef struct SAVED_STATE {
+	uint16_t temp;
+	uint16_t cycleCnt;
+} SAVED_STATE;
+
+extern float currTemp;
 extern uint16_t hotPlatePwr;
 extern uint16_t fanPwr;
-extern int16_t tempDelta;
+extern float tempDelta;
 extern int16_t tempCurve[CURVE_POINT_CNT];
-extern enum Mode currMode;
+extern enum Mode controlMode;
+extern SAVED_STATE savedState;
+extern uint8_t pidLoopBusy;
+extern uint16_t timeElapsed;
 
 void runLogicLoop(void);
+void startWorking(void);
+void stopWorking(void);
+void logicTimeIncrement(void);
+void setManualTemp(uint16_t temp);

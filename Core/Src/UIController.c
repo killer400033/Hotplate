@@ -37,8 +37,11 @@ void initializeUI(void) {
 	LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_15);
 }
 
-void secondlyInterrupt(void) {
-
+void UITimeIncrement(void) {
+	if (currMenu == MAIN_MENU) {
+		enum Input input = TIME;
+		inputUpdateMain(input);
+	}
 }
 
 void runUILoop(void) {

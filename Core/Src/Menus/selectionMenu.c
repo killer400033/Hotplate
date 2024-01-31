@@ -33,6 +33,12 @@ void inputUpdateSelection(enum Input input) {
 			break;
 		case 1:
 			nextMenu = MAIN_MENU;
+			if (controlMode == WORKING || controlMode == INITIALIZING) {
+				stopWorking();
+			}
+			else {
+				startWorking();
+			}
 			break;
 		case 2:
 			nextMenu = CURVE_MENU;
@@ -44,16 +50,23 @@ void inputUpdateSelection(enum Input input) {
 			break;
 		}
 	}
-	else {
+	else if (input == ENC_NEG || input == ENC_POS) {
 		menuSelection += input;
-		if (menuSelection < 0) menuSelection = 3;
-		if (menuSelection > 3) menuSelection = 0;
+		if (controlMode != WORKING && controlMode != INITIALIZING) {
+			if (menuSelection < 0) menuSelection = 3;
+			if (menuSelection > 3) menuSelection = 0;
+		}
+		else {
+			if (menuSelection < 0) menuSelection = 1;
+			if (menuSelection > 1) menuSelection = 0;
+		}
 		updatePending = TRUE;
 	}
 }
 
 static inline void initialize(void) {
 	nextMenu = THIS_MENU;
+	menuSelection = 0;
 }
 
 static inline void drawMenu(void) {
@@ -80,13 +93,18 @@ static inline void drawMenu(void) {
 	}
 
 	drawRectangleHollow(7, 16, 50, 16, 2);
-	drawString(13, 21, font8x8, "Start");
+	drawString(17, 21, font8x8, "Home");
 
 	drawRectangleHollow(7, 42, 50, 16, 2);
 	drawString(13, 47, font8x8, "Curve");
 
 	drawRectangleHollow(70, 16, 50, 16, 2);
-	drawString(80, 21, font8x8, "Home");
+	if (controlMode != WORKING && controlMode != INITIALIZING) {
+		drawString(76, 21, font8x8, "Start");
+	}
+	else {
+		drawString(76, 21, font8x8, "Abort");
+	}
 
 	drawRectangleHollow(70, 42, 50, 16, 2);
 	drawString(76, 47, font8x8, "Calib");

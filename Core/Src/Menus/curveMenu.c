@@ -34,7 +34,7 @@ void inputUpdateCurve(enum Input input) {
 		}
 		updatePending = TRUE;
 	}
-	else {
+	else if (input == ENC_NEG || input == ENC_POS) {
 		tempCurve[curveSelection] += input * 2;
 		if (tempCurve[curveSelection] < TEMP_MIN) tempCurve[curveSelection] = TEMP_MIN;
 		if (tempCurve[curveSelection] > TEMP_MAX) tempCurve[curveSelection] = TEMP_MAX;

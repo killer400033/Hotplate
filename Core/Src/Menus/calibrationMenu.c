@@ -12,7 +12,7 @@ static inline void drawMenu(void);
 static inline void initialize(void);
 
 uint8_t calibSelection = 0;
-char *calibStr[3] = {"Ready", "Heating", "Cooling"};
+char *calibStr[3] = {"Ready", "Working"};
 int16_t inputTemp = 0;
 uint16_t setTemps[3] = {50, 150, 250};
 
@@ -33,13 +33,15 @@ void inputUpdateCalibration(enum Input input) {
 		calibSelection++;
 		if (calibSelection == 3) {
 			nextMenu = MAIN_MENU;
+			stopWorking();
 		}
 		else {
 			inputTemp = setTemps[calibSelection];
+			setManualTemp(inputTemp);
 			updatePending = TRUE;
 		}
 	}
-	else {
+	else if (input == ENC_NEG || input == ENC_POS) {
 		inputTemp += input;
 		if (inputTemp < TEMP_MIN) inputTemp = TEMP_MIN;
 		if (inputTemp > TEMP_MAX) inputTemp = TEMP_MAX;
@@ -51,13 +53,19 @@ static inline void initialize(void) {
 	nextMenu = THIS_MENU;
 	calibSelection = 0;
 	inputTemp = setTemps[calibSelection];
+	setManualTemp(inputTemp);
 }
 
 static inline void drawMenu(void) {
 	char str[5] = {0};
 	clearDisplay();
 
-	drawString((DISPLAY_X - 8*strlen(calibStr[currMode])) / 2, 5, font8x8, (char *)calibStr[currMode]);
+	if (tempDelta < ERROR_MARGIN && tempDelta > -ERROR_MARGIN) {
+		drawString((DISPLAY_X - 8*strlen(calibStr[0])) / 2, 5, font8x8, (char *)calibStr[controlMode]);
+	}
+	else {
+		drawString((DISPLAY_X - 8*strlen(calibStr[1])) / 2, 5, font8x8, (char *)calibStr[controlMode]);
+	}
 
 	drawString(4, 28, font8x8, " Set Temp:");
 	drawString(4, 40, font8x8, "Meas Temp:");
@@ -66,7 +74,7 @@ static inline void drawMenu(void) {
 	sprintf(str, "%dC", setTemps[calibSelection]);
 	drawString(92, 28, font8x8, str);
 
-	sprintf(str, "%dC", currTemp);
+	sprintf(str, "%dC", (int16_t)currTemp);
 	drawString(92, 40, font8x8, str);
 
 	sprintf(str, "%dC", inputTemp);

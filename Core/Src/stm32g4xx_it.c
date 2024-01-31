@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "displayDriver.h"
 #include "UIController.h"
+#include "logicControl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,12 +45,17 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+// Display Driver Stuff
 uint8_t currInsTransfer;
 
 uint8_t instruction_1[3] = {0xF8, 0x20, 0x60};
 uint8_t instruction_2[5] = {0xF8, 0x80, 0x00, 0x80, 0x00};
 uint8_t instruction_3[3] = {0xF8, 0x20, 0x20};
 uint8_t currVert = 0;
+
+// PID and Timer stuff
+uint16_t pidCycleCnt = 0;
+uint16_t timerInterruptCounter = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -259,6 +265,28 @@ void EXTI15_10_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles SPI3 global interrupt.
+  */
+void SPI3_IRQHandler(void)
+{
+  /* USER CODE BEGIN SPI3_IRQn 0 */
+
+  /* USER CODE END SPI3_IRQn 0 */
+  /* USER CODE BEGIN SPI3_IRQn 1 */
+	uint16_t data = LL_SPI_ReceiveData16(SPI3);
+	LL_SPI_Disable(SPI3);
+	pidCycleCnt++;
+	if (pidLoopBusy) {
+		return;
+	}
+	savedState.cycleCnt = pidCycleCnt;
+	savedState.temp = data;
+	pidLoopBusy = TRUE;
+	pidCycleCnt = 0;
+  /* USER CODE END SPI3_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM6 global interrupt, DAC1 and DAC3 channel underrun error interrupts.
   */
 void TIM6_DAC_IRQHandler(void)
@@ -323,7 +351,15 @@ void TIM7_IRQHandler(void)
   /* USER CODE END TIM7_IRQn 0 */
   /* USER CODE BEGIN TIM7_IRQn 1 */
 	LL_TIM_ClearFlag_UPDATE(TIM7);
-	secondlyInterrupt();
+
+  LL_SPI_Enable(SPI3); // Begin receiving from slave
+
+	timerInterruptCounter++;
+	if (timerInterruptCounter >= TIMER_INTERRUPT_CNT) {
+		UITimeIncrement();
+		logicTimeIncrement();
+		timerInterruptCounter = 0;
+	}
   /* USER CODE END TIM7_IRQn 1 */
 }
 
