@@ -13,7 +13,7 @@ static enum Menu nextMenu = THIS_MENU;
 static inline void drawMenu(void);
 static inline void initialize(void);
 
-uint8_t readCurveData(void);
+uint8_t readStoredData(void);
 
 uint8_t successfulRead;
 
@@ -37,25 +37,39 @@ void inputUpdateRead(enum Input input) {
 
 static inline void initialize(void) {
 	nextMenu = THIS_MENU;
-	successfulRead = readCurveData();
+	successfulRead = readStoredData();
 }
 
-uint8_t readCurveData(void) {
+uint8_t readStoredData(void) {
+	// Set default values incase of EEPROM failure
+	memcpy(tempCalib, defaultTempCalib, 2 * sizeof(float));
+	memcpy(tempCurve, defaultTempCurve, CURVE_POINT_CNT * 2);
+
 	uint8_t dataOut[CURVE_POINT_CNT * 2] = {0};
 	TRANSFER_STATUS transferStatus;
 
-	while (!eepromReadData(0x00, dataOut, CURVE_POINT_CNT * 2, &transferStatus)); // Wait for I2C to be free
+	// Curve Data
+	while (!eepromReadData(CURVE_ADDRESS, dataOut, CURVE_POINT_CNT * 2, &transferStatus)); // Wait for I2C to be free
 	while (transferStatus == EEPROM_PENDING); // Wait for transfer to finish
-
 	if (transferStatus == EEPROM_ERROR) return FALSE;
 
-	// Write Data
 	for (uint16_t i = 0; i < CURVE_POINT_CNT * 2; i+=2) {
 		uint16_t temp = dataOut[i];
 		temp = temp << 8;
 		temp |= dataOut[i + 1];
 		tempCurve[i/2] = temp;
 	}
+
+	// Calibration Data
+	union FloatDecrypt floatDecrypt;
+
+	while (!eepromReadData(CALIB_ADDRESS, dataOut, 2 * sizeof(float), &transferStatus)); // Wait for I2C to be free
+	while (transferStatus == EEPROM_PENDING); // Wait for transfer to finish
+	if (transferStatus == EEPROM_ERROR) return FALSE;
+
+	memcpy(floatDecrypt.bytes, dataOut, 2 * sizeof(float));
+	tempCalib[0] = floatDecrypt.f[0];
+	tempCalib[1] = floatDecrypt.f[1];
 
 	return TRUE;
 }

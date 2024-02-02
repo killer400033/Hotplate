@@ -11,9 +11,11 @@ static enum Menu nextMenu = THIS_MENU;
 static inline void drawMenu(void);
 static inline void initialize(void);
 
+void findLineOfBestFit(void);
+
 uint8_t calibSelection = 0;
 char *calibStr[3] = {"Ready", "Working"};
-int16_t inputTemp = 0;
+float tempPoins[3][2] = {{50, 50}, {150, 150}, {250, 250}}; // 3 points where temp is calibrated (0 is x, 1 is y)
 uint16_t setTemps[3] = {50, 150, 250};
 
 enum Menu runMenuCalibration(uint8_t doInitialize) {
@@ -30,30 +32,55 @@ enum Menu runMenuCalibration(uint8_t doInitialize) {
 
 void inputUpdateCalibration(enum Input input) {
 	if (input == BUTTON) {
+		tempPoins[calibSelection][0] = currTemp;
 		calibSelection++;
 		if (calibSelection == 3) {
-			nextMenu = MAIN_MENU;
+			nextMenu = WRITE_PENDING_MENU;
 			stopWorking();
+			findLineOfBestFit();
 		}
 		else {
-			inputTemp = setTemps[calibSelection];
-			setManualTemp(inputTemp);
+			setManualTemp(setTemps[calibSelection]);
 			updatePending = TRUE;
 		}
 	}
 	else if (input == ENC_NEG || input == ENC_POS) {
-		inputTemp += input;
-		if (inputTemp < TEMP_MIN) inputTemp = TEMP_MIN;
-		if (inputTemp > TEMP_MAX) inputTemp = TEMP_MAX;
+		tempPoins[calibSelection][1] += input;
+		if (tempPoins[calibSelection][1] < TEMP_MIN) tempPoins[calibSelection][1] = TEMP_MIN;
+		if (tempPoins[calibSelection][1] > TEMP_MAX) tempPoins[calibSelection][1] = TEMP_MAX;
 		updatePending = TRUE;
 	}
+	else if (input == TIME) {
+		updatePending = TRUE;
+	}
+}
+
+void findLineOfBestFit(void) {
+	// Method of Least Squares
+	float sum_x = tempPoins[0][0] + tempPoins[1][0] + tempPoins[2][0];
+	float sum_y = tempPoins[0][1] + tempPoins[1][1] + tempPoins[2][1];
+	float sum_xy = (tempPoins[0][0]*tempPoins[0][1]) + (tempPoins[1][0]*tempPoins[1][1]) + (tempPoins[2][0]*tempPoins[2][1]);
+	float sum_xx = (tempPoins[0][0]*tempPoins[0][0]) + (tempPoins[1][0]*tempPoins[1][0]) + (tempPoins[2][0]*tempPoins[2][0]);
+
+	float _m = (3.0*sum_xy - sum_x*sum_y) / (3.0*sum_xx - sum_x*sum_x);
+	float _b = (sum_y - _m*sum_x) / 3.0;
+
+	tempCalib[0] = _m;
+	tempCalib[1] = _b;
 }
 
 static inline void initialize(void) {
 	nextMenu = THIS_MENU;
 	calibSelection = 0;
-	inputTemp = setTemps[calibSelection];
-	setManualTemp(inputTemp);
+
+	// Set default temp calibration
+	memcpy(tempCalib, defaultTempCalib, 2 * sizeof(float));
+
+	for (uint8_t i = 0; i < 3; i++) {
+		tempPoins[i][1] = setTemps[i];
+	}
+
+	setManualTemp(setTemps[calibSelection]);
 }
 
 static inline void drawMenu(void) {
@@ -77,7 +104,7 @@ static inline void drawMenu(void) {
 	sprintf(str, "%dC", (int16_t)currTemp);
 	drawString(92, 40, font8x8, str);
 
-	sprintf(str, "%dC", inputTemp);
+	sprintf(str, "%dC", (uint16_t)tempPoins[calibSelection][1]);
 	drawRectangleHollow(90, 50, 3 + strlen(str) * 8, 11, 1);
 	drawString(92, 52, font8x8, str);
 

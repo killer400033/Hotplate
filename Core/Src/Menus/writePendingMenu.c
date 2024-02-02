@@ -13,7 +13,8 @@ static enum Menu nextMenu = THIS_MENU;
 static inline void drawMenu(void);
 static inline void initialize(void);
 
-uint8_t saveCurveData(void);
+uint8_t writeNewData(void);
+uint8_t transferAndRead(uint16_t address, uint8_t *data, uint16_t n);
 
 uint8_t successfulWrite;
 
@@ -37,30 +38,19 @@ void inputUpdateWrite(enum Input input) {
 
 static inline void initialize(void) {
 	nextMenu = THIS_MENU;
-	successfulWrite = saveCurveData();
+	successfulWrite = writeNewData();
 }
 
-uint8_t saveCurveData(void) {
+uint8_t writeNewData(void) {
 	uint8_t dataOut[CURVE_POINT_CNT * 2] = {0};
-	TRANSFER_STATUS transferStatus;
 
+	// Write Curve Data
 	for (uint16_t i = 0; i < CURVE_POINT_CNT * 2; i+=2) {
 		dataOut[i] = (tempCurve[i/2] & 0xFF00) >> 8;
 		dataOut[i + 1] = tempCurve[i/2] & 0xFF;
 	}
 
-
-	while (!eepromWriteData(0x00, dataOut, CURVE_POINT_CNT * 2, &transferStatus)); // Wait for I2C to be free
-	while (transferStatus == EEPROM_PENDING); // Wait for transfer to finish
-
-	if (transferStatus == EEPROM_ERROR) return FALSE;
-
-	LL_mDelay(5); // Delay for EEPROM write cycle
-
-	while (!eepromReadData(0x00, dataOut, CURVE_POINT_CNT * 2, &transferStatus)); // Wait for I2C to be free
-	while (transferStatus == EEPROM_PENDING); // Wait for transfer to finish
-
-	if (transferStatus == EEPROM_ERROR) return FALSE;
+	if (!transferAndRead(CURVE_ADDRESS, dataOut, CURVE_POINT_CNT * 2)) return FALSE;
 
 	// Verify data
 	for (uint16_t i = 0; i < CURVE_POINT_CNT * 2; i+=2) {
@@ -71,6 +61,36 @@ uint8_t saveCurveData(void) {
 			return FALSE;
 		}
 	}
+
+	// Write Calibration Data
+	union FloatDecrypt floatDecrypt;
+	floatDecrypt.f[0] = tempCalib[0];
+	floatDecrypt.f[1] = tempCalib[1];
+	memcpy(dataOut, floatDecrypt.bytes, 2 * sizeof(float));
+
+	if (!transferAndRead(CALIB_ADDRESS, dataOut, 2 * sizeof(float))) return FALSE;
+
+	for (uint8_t i = 0; i < 2 * sizeof(float); i++) {
+		if (floatDecrypt.bytes[i] != dataOut[i]) {
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+uint8_t transferAndRead(uint16_t address, uint8_t *data, uint16_t n) {
+	TRANSFER_STATUS transferStatus;
+
+	while (!eepromWriteData(address, data, n, &transferStatus)); // Wait for I2C to be free
+	while (transferStatus == EEPROM_PENDING); // Wait for transfer to finish
+	if (transferStatus == EEPROM_ERROR) return FALSE;
+
+	LL_mDelay(5); // Delay for EEPROM write cycle
+
+	while (!eepromReadData(address, data, n, &transferStatus)); // Wait for I2C to be free
+	while (transferStatus == EEPROM_PENDING); // Wait for transfer to finish
+	if (transferStatus == EEPROM_ERROR) return FALSE;
 
 	return TRUE;
 }

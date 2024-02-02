@@ -44,6 +44,10 @@ void UITimeIncrement(void) {
 		enum Input input = TIME;
 		inputUpdateMain(input);
 	}
+	else if (currMenu == CALIBRATION_MENU) {
+		enum Input input = TIME;
+		inputUpdateMain(input);
+	}
 }
 
 void runUILoop(void) {

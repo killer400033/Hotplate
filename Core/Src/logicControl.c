@@ -19,10 +19,15 @@ float tempDelta = 0;
 enum Mode controlMode = PWR_STANDBY;
 
 uint16_t timeElapsed = 0; // Each increment is 0.5 seconds
-int16_t tempCurve[CURVE_POINT_CNT] = {20, 50, 100, 150, 150, 150, 150, 200, 250, 250, 150, 100, 60};
+
+int16_t tempCurve[CURVE_POINT_CNT] = {0};
+float tempCalib[2] = {0}; // Line of best fit for temp calibration (m, b)
 
 SAVED_STATE savedState = {.temp = 0, .cycleCnt = 0};
 uint8_t pidLoopBusy = FALSE; // Indicates whether there is data to be processed by PID loop
+
+const int16_t defaultTempCurve[CURVE_POINT_CNT] = {20, 50, 100, 150, 150, 150, 150, 200, 250, 250, 150, 100, 60};
+const float defaultTempCalib[2] = {1.0, 0.0};
 
 // Private Variables
 float manualSetTemp = 0;
@@ -71,7 +76,7 @@ void runLogicLoop(void) {
 	float output;
 
 	if (pidLoopBusy) {
-		currTemp = (float)(savedState.temp >> 3) / 4.0;
+		currTemp = tempCalib[1] + tempCalib[0]*((float)(savedState.temp >> 3) / 4.0);
 
 		switch (controlMode) {
 		case INITIALIZING:

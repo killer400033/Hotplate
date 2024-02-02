@@ -26,10 +26,14 @@ extern uint16_t hotPlatePwr;
 extern uint16_t fanPwr;
 extern float tempDelta;
 extern int16_t tempCurve[CURVE_POINT_CNT];
+extern float tempCalib[2];
 extern enum Mode controlMode;
 extern SAVED_STATE savedState;
 extern uint8_t pidLoopBusy;
 extern uint16_t timeElapsed;
+
+extern const float defaultTempCalib[2];
+extern const int16_t defaultTempCurve[CURVE_POINT_CNT];
 
 void runLogicLoop(void);
 void startWorking(void);

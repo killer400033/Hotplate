@@ -21,6 +21,11 @@ enum Input {
 	TIME,
 };
 
+union FloatDecrypt {
+	float f[2];
+	uint8_t bytes[8];
+};
+
 extern uint8_t updatePending;
 
 void inputInterrupt(enum Input input);
