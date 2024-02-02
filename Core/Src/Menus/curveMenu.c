@@ -1,9 +1,9 @@
 #include "../UIController.h"
-#include "../displayDriver.h"
-#include "../displayAPI.h"
 #include "../logicControl.h"
 #include <string.h>
 #include <stdio.h>
+#include "../Display/displayAPI.h"
+#include "../Display/displayDriver.h"
 
 #define THIS_MENU CURVE_MENU
 
@@ -30,7 +30,7 @@ void inputUpdateCurve(enum Input input) {
 		curveSelection++;
 		if (curveSelection == CURVE_POINT_CNT) {
 			curveSelection = 0;
-			nextMenu = MAIN_MENU;
+			nextMenu = WRITE_PENDING_MENU;
 		}
 		updatePending = TRUE;
 	}

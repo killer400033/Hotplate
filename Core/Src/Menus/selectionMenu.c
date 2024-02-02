@@ -1,9 +1,9 @@
 #include "../UIController.h"
-#include "../displayDriver.h"
-#include "../displayAPI.h"
 #include "../logicControl.h"
 #include <string.h>
 #include <stdio.h>
+#include "../Display/displayAPI.h"
+#include "../Display/displayDriver.h"
 
 #define THIS_MENU SELECTION_MENU
 
@@ -70,7 +70,6 @@ static inline void initialize(void) {
 }
 
 static inline void drawMenu(void) {
-	char str[6] = {0};
 	clearDisplay();
 
 	drawString(8, 3, font8x8, "Selection Menu");

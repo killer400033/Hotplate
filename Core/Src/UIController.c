@@ -1,16 +1,18 @@
 #include "UIController.h"
-#include "displayDriver.h"
 #include "main.h"
-#include "logicControl.h"
-#include "displayAPI.h"
 
+#include "Display/displayAPI.h"
+#include "Display/displayDriver.h"
+#include "logicControl.h"
 #include "Menus/mainMenu.h"
 #include "Menus/calibrationMenu.h"
 #include "Menus/selectionMenu.h"
 #include "Menus/curveMenu.h"
+#include "Menus/writePendingMenu.h"
+#include "Menus/readPendingMenu.h"
 
 
-enum Menu currMenu = MAIN_MENU;
+enum Menu currMenu = READ_PENDING_MENU;
 uint8_t updatePending = TRUE;
 uint8_t doInitialize = TRUE;
 
@@ -59,6 +61,11 @@ void runUILoop(void) {
 	case CURVE_MENU:
 		newMenu = runMenuCurve(doInitialize);
 		break;
+	case WRITE_PENDING_MENU:
+		newMenu = runMenuWrite(doInitialize);
+		break;
+	case READ_PENDING_MENU:
+		newMenu = runMenuRead(doInitialize);
 	default:
 		break;
 	}
@@ -83,6 +90,12 @@ void inputInterrupt(enum Input input) {
 		break;
 	case CURVE_MENU:
 		inputUpdateCurve(input);
+		break;
+	case WRITE_PENDING_MENU:
+		inputUpdateWrite(input);
+		break;
+	case READ_PENDING_MENU:
+		inputUpdateRead(input);
 		break;
 	default:
 		break;

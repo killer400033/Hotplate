@@ -30,8 +30,8 @@ enum TEMP_MODE tempSelectMode = CURVE;
 
 PIDState prev_state = {.error = 0, .integral = 0};
 float _P = 1;
-float _I = 1;
-float _D = 1;
+float _I = 0;
+float _D = 0;
 
 void updateOutputs(float input);
 
@@ -47,6 +47,8 @@ void setManualTemp(uint16_t temp) {
 }
 
 void startWorking(void) {
+	prev_state.error = 0;
+	prev_state.integral = 0;
 	tempSelectMode = CURVE;
 	controlMode = INITIALIZING;
 	timeElapsed = 0;
@@ -129,7 +131,7 @@ float doPIDLoop(void) {
 		tempDelta = setTemp - currTemp;
 	}
 
-	time = savedState.cycleCnt * PID_COUNTER * PID_PRESCALER / CLK;
+	time = (float)(savedState.cycleCnt * PID_COUNTER * PID_PRESCALER) / (float)CLK;
 	return calculatePID(&prev_state, tempDelta, time);
 }
 

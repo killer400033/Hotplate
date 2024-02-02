@@ -22,9 +22,10 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "displayDriver.h"
 #include "UIController.h"
 #include "logicControl.h"
+#include "Display/displayDriver.h"
+#include "eeprom.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +53,9 @@ uint8_t instruction_1[3] = {0xF8, 0x20, 0x60};
 uint8_t instruction_2[5] = {0xF8, 0x80, 0x00, 0x80, 0x00};
 uint8_t instruction_3[3] = {0xF8, 0x20, 0x20};
 uint8_t currVert = 0;
+
+// Input Stuff
+uint16_t buttonDebounce = 0;
 
 // PID and Timer stuff
 uint16_t pidCycleCnt = 0;
@@ -229,6 +233,21 @@ void DMA1_Channel2_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles TIM1 update interrupt and TIM16 global interrupt.
+  */
+void TIM1_UP_TIM16_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 0 */
+	buttonDebounce = 0;
+	LL_TIM_ClearFlag_UPDATE(TIM16);
+  /* USER CODE END TIM1_UP_TIM16_IRQn 0 */
+
+  /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 1 */
+
+  /* USER CODE END TIM1_UP_TIM16_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI line[15:10] interrupts.
   */
 void EXTI15_10_IRQHandler(void)
@@ -255,8 +274,13 @@ void EXTI15_10_IRQHandler(void)
   {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_15);
     /* USER CODE BEGIN LL_EXTI_LINE_15 */
-    input = BUTTON;
-    inputInterrupt(input);
+
+    // Button Debouncing
+    if ((LL_TIM_GetCounter(TIM16) - buttonDebounce) > 800) {
+      input = BUTTON;
+      inputInterrupt(input);
+    }
+    buttonDebounce = LL_TIM_GetCounter(TIM16);
     /* USER CODE END LL_EXTI_LINE_15 */
   }
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */
@@ -361,6 +385,34 @@ void TIM7_IRQHandler(void)
 		timerInterruptCounter = 0;
 	}
   /* USER CODE END TIM7_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I2C3 event interrupt / I2C3 wake-up interrupt through EXTI line 27.
+  */
+void I2C3_EV_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C3_EV_IRQn 0 */
+	eepromInterruptHandler();
+  /* USER CODE END I2C3_EV_IRQn 0 */
+
+  /* USER CODE BEGIN I2C3_EV_IRQn 1 */
+
+  /* USER CODE END I2C3_EV_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I2C3 error interrupt.
+  */
+void I2C3_ER_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C3_ER_IRQn 0 */
+	eepromErrorInterruptHandler();
+  /* USER CODE END I2C3_ER_IRQn 0 */
+
+  /* USER CODE BEGIN I2C3_ER_IRQn 1 */
+
+  /* USER CODE END I2C3_ER_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

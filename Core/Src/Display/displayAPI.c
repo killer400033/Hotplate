@@ -1,6 +1,8 @@
-#include <stdint.h>
-#include "displayDriver.h"
 #include "displayAPI.h"
+
+#include <stdint.h>
+
+#include "displayDriver.h"
 
 extern uint32_t getSqrt(float input);
 void _drawBitMap(uint16_t x, uint16_t y, uint8_t *bitmap, uint16_t byte_width, uint16_t height);

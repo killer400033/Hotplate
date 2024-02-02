@@ -1,9 +1,9 @@
 #include "../UIController.h"
-#include "../displayDriver.h"
-#include "../displayAPI.h"
 #include "../logicControl.h"
 #include <string.h>
 #include <stdio.h>
+#include "../Display/displayAPI.h"
+#include "../Display/displayDriver.h"
 
 #define THIS_MENU CALIBRATION_MENU
 

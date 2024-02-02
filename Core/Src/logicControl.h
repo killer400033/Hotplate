@@ -5,7 +5,7 @@
 #define ERROR_MARGIN 5
 
 #define CLK 170000000
-#define PID_COUNTER 4250
+#define PID_COUNTER 4250 // Determines the PID loop and temperature sensor polling frequency (temp sensor has min conversion time of ~0.2s)
 #define PID_PRESCALER (9999 + 1)
 #define TIMER_INTERRUPT_CNT CLK / (PID_COUNTER * PID_PRESCALER * 2)
 

@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "UIController.h"
 #include "logicControl.h"
+#include "eeprom.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,6 +57,7 @@ static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_I2C3_Init(void);
+static void MX_TIM16_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -104,14 +106,15 @@ int main(void)
   MX_TIM7_Init();
   MX_SPI3_Init();
   MX_I2C3_Init();
+  MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
-  LL_SPI_Enable(SPI1);
-
-  initializeUI();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  eepromInitialize();
+  initializeUI();
+
   while (1)
   {
   	runLogicLoop();
@@ -212,6 +215,12 @@ static void MX_I2C3_Init(void)
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C3);
 
+  /* I2C3 interrupt Init */
+  NVIC_SetPriority(I2C3_EV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),14, 0));
+  NVIC_EnableIRQ(I2C3_EV_IRQn);
+  NVIC_SetPriority(I2C3_ER_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),14, 0));
+  NVIC_EnableIRQ(I2C3_ER_IRQn);
+
   /* USER CODE BEGIN I2C3_Init 1 */
 
   /* USER CODE END I2C3_Init 1 */
@@ -232,7 +241,8 @@ static void MX_I2C3_Init(void)
   LL_I2C_DisableGeneralCall(I2C3);
   LL_I2C_EnableClockStretching(I2C3);
   /* USER CODE BEGIN I2C3_Init 2 */
-
+  LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_8, LL_GPIO_PULL_UP);
+  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_5, LL_GPIO_PULL_UP);
   /* USER CODE END I2C3_Init 2 */
 
 }
@@ -418,7 +428,7 @@ static void MX_TIM6_Init(void)
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM6);
 
   /* TIM6 interrupt Init */
-  NVIC_SetPriority(TIM6_DAC_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),14, 0));
+  NVIC_SetPriority(TIM6_DAC_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),13, 0));
   NVIC_EnableIRQ(TIM6_DAC_IRQn);
 
   /* USER CODE BEGIN TIM6_Init 1 */
@@ -456,7 +466,7 @@ static void MX_TIM7_Init(void)
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM7);
 
   /* TIM7 interrupt Init */
-  NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),13, 0));
+  NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),12, 0));
   NVIC_EnableIRQ(TIM7_IRQn);
 
   /* USER CODE BEGIN TIM7_Init 1 */
@@ -473,6 +483,45 @@ static void MX_TIM7_Init(void)
   LL_TIM_SetPrescaler(TIM7, PID_PRESCALER);
   LL_TIM_SetAutoReload(TIM7, PID_COUNTER);
   /* USER CODE END TIM7_Init 2 */
+
+}
+
+/**
+  * @brief TIM16 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM16_Init(void)
+{
+
+  /* USER CODE BEGIN TIM16_Init 0 */
+
+  /* USER CODE END TIM16_Init 0 */
+
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM16);
+
+  /* TIM16 interrupt Init */
+  NVIC_SetPriority(TIM1_UP_TIM16_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
+
+  /* USER CODE BEGIN TIM16_Init 1 */
+
+  /* USER CODE END TIM16_Init 1 */
+  TIM_InitStruct.Prescaler = 42499;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 65535;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  TIM_InitStruct.RepetitionCounter = 0;
+  LL_TIM_Init(TIM16, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM16);
+  /* USER CODE BEGIN TIM16_Init 2 */
+  // Timer used for debouncing timer
+  LL_TIM_EnableCounter(TIM16);
+  LL_TIM_EnableIT_UPDATE(TIM16);
+  /* USER CODE END TIM16_Init 2 */
 
 }
 

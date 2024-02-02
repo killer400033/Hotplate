@@ -1,5 +1,6 @@
-#include "main.h"
 #include "displayDriver.h"
+
+#include "main.h"
 
 uint8_t displayBuffer[DISPLAY_Y][X_BYTES + 1] = {0};
 enum DisplayMode displayMode = STANDBY;
@@ -21,6 +22,8 @@ void sendInstruction(uint8_t _rWrS, uint8_t* data, uint32_t n) {
 }
 
 void initializeDisplay(void) {
+	LL_SPI_Enable(SPI1); // Enable SPI
+
 	uint8_t data[16] = {0};
 	data[0] = 0x20;
 

@@ -10,6 +10,8 @@ enum Menu {
 	MAIN_MENU,
 	SELECTION_MENU,
 	CURVE_MENU,
+	WRITE_PENDING_MENU,
+	READ_PENDING_MENU,
 };
 
 enum Input {

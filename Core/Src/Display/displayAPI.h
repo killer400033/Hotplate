@@ -1,5 +1,5 @@
-#include "fonts.h"
-#include "bitmaps.h"
+#include "../Data/bitmaps.h"
+#include "../Data/fonts.h"
 
 void clearDisplay(void);
 void drawAngledLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
