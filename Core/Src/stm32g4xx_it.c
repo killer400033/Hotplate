@@ -261,10 +261,10 @@ void EXTI15_10_IRQHandler(void)
     /* USER CODE BEGIN LL_EXTI_LINE_11 */
     if (!LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_12)) {
     	if (LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_11)) {
-    		input = ENC_POS;
+    		input = ENC_NEG;
     	}
     	else {
-    		input = ENC_NEG;
+    		input = ENC_POS;
     	}
     	inputInterrupt(input);
     }

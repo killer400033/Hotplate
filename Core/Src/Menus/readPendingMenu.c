@@ -78,12 +78,13 @@ static inline void drawMenu(void) {
 	clearDisplay();
 
 	if (successfulRead) {
-		drawString(16, 24, font8x8, "Successfully");
-		drawString(36, 34, font8x8, "Read!!!");
+		drawString(48, 18, font8x8, "Data");
+		drawString(16, 28, font8x8, "Successfully");
+		drawString(36, 38, font8x8, "Read!!!");
 	}
 	else {
 		drawString(28, 24, font8x8, "Failed To");
-		drawString(36, 34, font8x8, "Read...");
+		drawString(16, 34, font8x8, "Read Data...");
 	}
 
 

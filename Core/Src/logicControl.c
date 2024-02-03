@@ -1,5 +1,6 @@
 #include "logicControl.h"
 #include "UIController.h"
+#include "main.h"
 
 enum TEMP_MODE {
 	CURVE,
@@ -111,6 +112,8 @@ void updateOutputs(float input) {
 		hotPlatePwr = 0;
 		fanPwr = 0;
 	}
+	LL_TIM_OC_SetCompareCH3(TIM3, hotPlatePwr * 20);
+	LL_TIM_OC_SetCompareCH1(TIM15, fanPwr * 20);
 }
 
 float doPIDLoop(void) {

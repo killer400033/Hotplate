@@ -99,12 +99,13 @@ static inline void drawMenu(void) {
 	clearDisplay();
 
 	if (successfulWrite) {
-		drawString(16, 24, font8x8, "Successfully");
-		drawString(32, 34, font8x8, "Saved!!!");
+		drawString(48, 18, font8x8, "Data");
+		drawString(16, 28, font8x8, "Successfully");
+		drawString(32, 38, font8x8, "Saved!!!");
 	}
 	else {
 		drawString(28, 24, font8x8, "Failed To");
-		drawString(36, 34, font8x8, "Save...");
+		drawString(16, 34, font8x8, "Save Data...");
 	}
 
 

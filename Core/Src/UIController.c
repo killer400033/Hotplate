@@ -26,7 +26,9 @@ void initializeUI(void) {
 	drawBitMap(10, 0, logo);
 	writeToDisplay();
 	// Run fans test
+	LL_TIM_OC_SetCompareCH1(TIM15, 2000);
 	LL_mDelay(3000);
+	LL_TIM_OC_SetCompareCH1(TIM15, 0);
 	clearDisplay();
 	writeToDisplay();
 
