@@ -14,7 +14,7 @@ static inline void initialize(void);
 void findLineOfBestFit(void);
 
 uint8_t calibSelection = 0;
-char *calibStr[3] = {"Ready", "Working"};
+char *calibStr[2] = {"Ready", "Working"};
 float tempPoins[3][2] = {{50, 50}, {150, 150}, {250, 250}}; // 3 points where temp is calibrated (0 is x, 1 is y)
 uint16_t setTemps[3] = {50, 150, 250};
 
@@ -88,10 +88,10 @@ static inline void drawMenu(void) {
 	clearDisplay();
 
 	if (tempDelta < ERROR_MARGIN && tempDelta > -ERROR_MARGIN) {
-		drawString((DISPLAY_X - 8*strlen(calibStr[0])) / 2, 5, font8x8, (char *)calibStr[controlMode]);
+		drawString((DISPLAY_X - 8*strlen(calibStr[0])) / 2, 5, font8x8, (char *)calibStr[0]);
 	}
 	else {
-		drawString((DISPLAY_X - 8*strlen(calibStr[1])) / 2, 5, font8x8, (char *)calibStr[controlMode]);
+		drawString((DISPLAY_X - 8*strlen(calibStr[1])) / 2, 5, font8x8, (char *)calibStr[1]);
 	}
 
 	drawString(4, 28, font8x8, " Set Temp:");

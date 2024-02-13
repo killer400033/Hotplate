@@ -35,9 +35,9 @@ float manualSetTemp = 0;
 enum TEMP_MODE tempSelectMode = CURVE;
 
 PIDState prev_state = {.error = 0, .integral = 0};
-float _P = 1;
-float _I = 0;
-float _D = 0;
+float _P = 0.8;
+float _I = 0.0;
+float _D = 0.4;
 
 void updateOutputs(float input);
 
@@ -130,7 +130,7 @@ float doPIDLoop(void) {
 		float ratio = (((float)timeElapsed / 2.0) - (30 * index)) / 30.0;
 		setTemp = (float)tempCurve[index + 1] * ratio + (float)tempCurve[index] * (1 - ratio);
 		tempDelta = setTemp - currTemp;
-		if (tempDelta < ERROR_MARGIN && tempDelta > -ERROR_MARGIN) {
+		if (tempDelta < 1.0 && tempDelta > -1.0) {
 			controlMode = WORKING;
 		}
 	}
