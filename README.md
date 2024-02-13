@@ -29,6 +29,7 @@ I tried to make the code as fast as possible. E.g. for the sqrt function I used 
 
 All the functions used heavy bitwise operations, as I had to map randomly sized structures onto 16-bit long chunks that were written to the display.
 
+
 ## Logic and UI
 
 With the display "library" written, I was now ready to build the logic and UI elements. I first built the home menu:
@@ -66,16 +67,19 @@ The calibration menu looks like the following:
 
 In this menu, there are 3 calibration steps, one at 50 C, one at 150 C and one at 250 C. At each step, the user will wait until the hotplate reaches the "Set Temp". Then, the user will adjust the "Real Temp" to the actual measured temperature, taken by an external tool. Once all 3 steps are complete, the software will "plot" the 3 "Meas Temps" on the x-axis and the 3 "Real Temps" on the y-axis, and then get the line of best fit using the least square method. This yields a linear equation, where if the measured temperature is input, the true temperature should be output (assuming their error is linear). This equation is then just applied to the measured temperature from now on.
 
+
 ## Input
 User input is just handled by an encoder with built in button, shown here:
 
 ![image](https://github.com/killer400033/Hotplate/assets/37206981/6fe029e5-50c9-4b4c-b8a5-95d12685d912)
+
 
 ## EEPROM
 For the data produced by the curve menu and the calibration menu, it would be good if the data was saved to non-volatile storage such that it can be restored after power cycling. Hence, I added an external 256kB EEPROM (24LC256). It interfaced through I2C, hence I had to again create my own custom "library" to interface with it. Like before, I tried to minimize CPU overhead, meaning no stalling/ waiting for transfers. Instead, everything is interrupt-driven. Additionally, my "library" implements error checking to make sure writes and reads to the EEPROM are successful. The result is displayed to the user using popups like shown below:
 
 ![image](https://github.com/killer400033/Hotplate/assets/37206981/7eb410db-e4cd-43ca-a00a-101aaa5dd392)
 ![image](https://github.com/killer400033/Hotplate/assets/37206981/09c16cd8-7a73-4fc4-89be-b8a03bc342c3)
+
 
 ## Final Implementation
 
