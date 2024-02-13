@@ -12,7 +12,7 @@ With no real pre-existing libraries, everything connected to the microcontroller
 
 So, starting with the display, I chose the st7920 128x64 LCD, as it was cheap and I already had a couple:
 
-![image](https://github.com/killer400033/Hotplate/assets/37206981/df340d08-c3c8-4f38-b2ec-2c335868d4cd)
+<img src="https://github.com/killer400033/Hotplate/assets/37206981/8c049dd7-91af-4932-943a-323d287c350e" width="400">
 
 I first had to go through its very sparse documentation to try to figure out how to write to it. This meant a lot of experimenting with trying to get it to work, as the documentation skips major parts on how to drive the display. Once I finally figured it out, I maximized the SPI bus speed (I drove the display using its serial interface) and reduced the delays between data packets to maximize the transfer speed. I also designed the code such that the CPU has to spend almost no time working to write to the display. Instead, the DMA was programmed to automatically read from the display buffer and write it to the SPI peripheral, and timers were setup to wait the correct amount of time between instructions to the display, hence not stalling the CPU at all. I also considered a double-buffered system, allowing the CPU to edit the display buffer while the display was being updated, but for this display this was unnecessary as it was so slow that the CPU time taken to edit the display buffer would not significantly affect the max refresh rate. 
 
