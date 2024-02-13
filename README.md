@@ -33,6 +33,7 @@ All the functions used heavy bitwise operations, as I had to map randomly sized 
 ## Logic and UI
 
 With the display "library" written, I was now ready to build the logic and UI elements. I first built the home menu:
+### Home Menu
 
 ![image](https://github.com/killer400033/Hotplate/assets/37206981/90fa5956-3508-4703-92da-bab5e5ad67b9)
 
@@ -45,6 +46,7 @@ Using a couple custom bitmaps, this menu shows:
 - job time elapsed on top right (starts once heating cycle has started)
 
 To go to another menu, the selection menu can be brought up:
+### Selection Menu
 
 ![image](https://github.com/killer400033/Hotplate/assets/37206981/26daa868-ff02-41b0-a777-3cad5c9a4cda)
 
@@ -56,12 +58,14 @@ This menu gives 4 options to select from:
 - Calib: calibrate the temperature probe
 
 The curve menu looks like the following:
+### Curve Menu
 
 ![image](https://github.com/killer400033/Hotplate/assets/37206981/940daed1-75b1-4424-b11a-d74748b98471)
 
 As you can see, in this menu you can adjust the temperature curve that the hotplate will attempt to follow. The x-axis is the time in seconds (goes up to 360s = 6 mins). There are 13 points of adjustment at 30-second intervals, and each point can be adjusted to a temperature between 0 and 270 degrees.
 
 The calibration menu looks like the following:
+### Calibration Menu
 
 ![image](https://github.com/killer400033/Hotplate/assets/37206981/2b7e9f38-257d-47a2-ade6-7e5a0ccfecb3)
 
